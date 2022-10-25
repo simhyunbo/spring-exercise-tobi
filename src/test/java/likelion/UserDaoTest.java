@@ -15,9 +15,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 
 class UserDaoTest {
-    @Autowired
-    ApplicationContext context;
-
 
 
     @Test
