@@ -23,24 +23,16 @@ public class UserDao {
 //                env.get("DB_HOST"), env.get("DB_USER"), env.get("DB_PASSWORD"));
 //        return conn;
 //    }
-
-    public void add(User user) throws SQLException, ClassNotFoundException {
-
+    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws ClassNotFoundException{
         Connection conn = null;
         PreparedStatement pstmt = null;
-        try {
+
+        try{
             conn = conntectionMaker.getConnection();
-
-
-            pstmt = conn.prepareStatement("INSERT INTO users(id, name, password) VALUES(?,?,?);");
-            pstmt.setString(1, user.getId());
-            pstmt.setString(2, user.getName());
-            pstmt.setString(3, user.getPassword());
-
-
+            pstmt = stmt.makeStatement(conn);
             pstmt.executeUpdate();
-        }catch (SQLException e){
-            throw e;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }finally {
             if(pstmt != null){
                 try {
@@ -50,11 +42,44 @@ public class UserDao {
             }
             if(conn != null){
                 try{
-                    conn.close();;
+                    conn.close();
                 }catch (SQLException e){
                 }
             }
         }
+    }
+
+    public void add(User user) throws SQLException, ClassNotFoundException {
+            jdbcContextWithStatementStrategy(new AddStrategy(user));
+//        Connection conn = null;
+//        PreparedStatement pstmt = null;
+//        try {
+//            conn = conntectionMaker.getConnection();
+//
+//
+//            pstmt = conn.prepareStatement("INSERT INTO users(id, name, password) VALUES(?,?,?);");
+//            pstmt.setString(1, user.getId());
+//            pstmt.setString(2, user.getName());
+//            pstmt.setString(3, user.getPassword());
+//
+//
+//            pstmt.executeUpdate();
+//        }catch (SQLException e){
+//            throw e;
+//        }finally {
+//            if(pstmt != null){
+//                try {
+//                    pstmt.close();
+//                }catch (SQLException e){
+//                }
+//            }
+//            if(conn != null){
+//                try{
+//                    conn.close();;
+//                }catch (SQLException e){
+//                }
+//            }
+//        }
     }
 
     public User findById(String id) throws SQLException, ClassNotFoundException {
@@ -78,12 +103,12 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException, ClassNotFoundException {
-        Connection conn = conntectionMaker.getConnection();
-
-        PreparedStatement ps = conn.prepareStatement("delete from users");
-        ps.executeUpdate();
-        ps.close();
-        conn.close();
+        jdbcContextWithStatementStrategy(new DeleteAllStrategy());
+//        Connection conn = conntectionMaker.getConnection();
+//        PreparedStatement ps = conn.prepareStatement("delete from users");
+//        ps.executeUpdate();
+//        ps.close();
+//        conn.close();
     }
 
     public int getCount() throws SQLException, ClassNotFoundException {
