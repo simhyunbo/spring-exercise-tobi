@@ -1,8 +1,6 @@
 package likelion;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -17,11 +15,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserDaoTest {
     @Autowired
     ApplicationContext context;
+    UserDao userDao;
+    User user1;
+    User user2;
+    User user3;
+
+    @BeforeEach
+    void setUp(){
+        this.userDao = context.getBean("awsUserDao", UserDao.class);
+        this.user1 = new User("1","sim","1234");
+        this.user2 = new User("2","kim","5678");
+        this.user3 = new User("3","park","qwer");
+    }
 
     @Test
+    @DisplayName("add select 테스트")
     void addANDSelect() throws SQLException, ClassNotFoundException {
         //매개변수로 class+BeanName을 던져준다.
-        UserDao userDao = context.getBean("awsUserDao", UserDao.class);
         String id = "12";
         userDao.add(new User(id,"kim","1234"));
         User user = userDao.findById(id);
@@ -29,12 +39,10 @@ class UserDaoTest {
     }
 
     @Test
+    @DisplayName("delete count 테스트")
     void deleteAndCount() throws SQLException, ClassNotFoundException {
-        UserDao userDao = context.getBean("awsUserDao",UserDao.class);
+        UserDao userDao = new UserDao();
         userDao.deleteAll();
-        User user1 = new User("1","sim","1234");
-        User user2 = new User("2","kim","5678");
-        User user3 = new User("3","park","qwer");
 
         userDao.add(user1);
         assertEquals(1,userDao.getCount());
