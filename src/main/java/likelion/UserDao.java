@@ -1,11 +1,17 @@
 package likelion;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+
+import javax.sql.DataSource;
 import java.sql.*;
-import java.util.Map;
 
 public class UserDao {
     //ConnectionMaker 생성
     private ConntectionMaker conntectionMaker;
+    JdbcContext jdbcContext;
+    private JdbcTemplate jdbcTemplate;
+    private DataSource dataSource;
 
     public UserDao(){
         this.conntectionMaker = new ConnectionMakerImpl();
@@ -13,16 +19,18 @@ public class UserDao {
     public UserDao(ConntectionMaker conntectionMaker){
         this.conntectionMaker = conntectionMaker;
     }
+    public UserDao(DataSource dataSource){
+        this.dataSource = dataSource;
+        this.jdbcContext = new JdbcContext(dataSource);
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+
+    }
 
 
-    //Connection 분리
-//    private Connection getConnection() throws ClassNotFoundException, SQLException {
-//        Map<String, String> env = System.getenv();
-//        Class.forName("com.mysql.cj.jdbc.Driver");
-//        Connection conn = DriverManager.getConnection(
-//                env.get("DB_HOST"), env.get("DB_USER"), env.get("DB_PASSWORD"));
-//        return conn;
-//    }
+    RowMapper<User> rowMapper = (rs, rowNum) ->
+            new User(rs.getString("id"),
+                    rs.getString("name"), rs.getString("password"));
+
     public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws ClassNotFoundException{
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -51,35 +59,7 @@ public class UserDao {
 
     public void add(User user) throws SQLException, ClassNotFoundException {
             jdbcContextWithStatementStrategy(new AddStrategy(user));
-//        Connection conn = null;
-//        PreparedStatement pstmt = null;
-//        try {
-//            conn = conntectionMaker.getConnection();
-//
-//
-//            pstmt = conn.prepareStatement("INSERT INTO users(id, name, password) VALUES(?,?,?);");
-//            pstmt.setString(1, user.getId());
-//            pstmt.setString(2, user.getName());
-//            pstmt.setString(3, user.getPassword());
-//
-//
-//            pstmt.executeUpdate();
-//        }catch (SQLException e){
-//            throw e;
-//        }finally {
-//            if(pstmt != null){
-//                try {
-//                    pstmt.close();
-//                }catch (SQLException e){
-//                }
-//            }
-//            if(conn != null){
-//                try{
-//                    conn.close();;
-//                }catch (SQLException e){
-//                }
-//            }
-//        }
+
     }
 
     public User findById(String id) throws SQLException, ClassNotFoundException {
@@ -102,13 +82,16 @@ public class UserDao {
             return user;
     }
 
+    public void executeSql(String sql) throws SQLException, ClassNotFoundException {
+        jdbcContextWithStatementStrategy(c->c.prepareStatement(sql));
+    }
+
     public void deleteAll() throws SQLException, ClassNotFoundException {
-        jdbcContextWithStatementStrategy(new DeleteAllStrategy());
-//        Connection conn = conntectionMaker.getConnection();
-//        PreparedStatement ps = conn.prepareStatement("delete from users");
-//        ps.executeUpdate();
-//        ps.close();
-//        conn.close();
+            //this.jdbcTemplate.update("delete from users");
+        //jdbcContextWithStatementStrategy(new DeleteAllStrategy());
+        //executeSql("delete from users");
+        this.jdbcContext.executeSql("delete from users");
+
     }
 
     public int getCount() throws SQLException, ClassNotFoundException {
