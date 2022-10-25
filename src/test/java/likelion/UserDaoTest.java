@@ -13,16 +13,18 @@ import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
-
+@ContextConfiguration(classes = UserFactory.class)
 class UserDaoTest {
-
+    @Autowired
+    ApplicationContext context;
 
     @Test
     void addANDSelect() throws SQLException, ClassNotFoundException {
-        UserDao userDao = new UserFactory().awsUserDao();
-        String id = "11";
-        userDao.add(new User(id,"sim","1234"));
+        //매개변수로 class+BeanName을 던져준다.
+        UserDao userDao = context.getBean("awsUserDao", UserDao.class);
+        String id = "12";
+        userDao.add(new User(id,"kim","1234"));
         User user = userDao.findById(id);
-        Assertions.assertEquals("sim",user.getName());
+        Assertions.assertEquals("kim",user.getName());
     }
 }

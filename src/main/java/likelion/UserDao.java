@@ -27,13 +27,13 @@ public class UserDao {
     public void add(User user) throws SQLException, ClassNotFoundException {
 
             Connection conn = conntectionMaker.getConnection();
-            // Query문 작성
+
             PreparedStatement pstmt = conn.prepareStatement("INSERT INTO users(id, name, password) VALUES(?,?,?);");
             pstmt.setString(1, user.getId());
             pstmt.setString(2, user.getName());
             pstmt.setString(3, user.getPassword());
 
-            // Query문 실행
+
             pstmt.executeUpdate();
 
             pstmt.close();
@@ -45,12 +45,10 @@ public class UserDao {
        
         Connection conn = conntectionMaker.getConnection();
 
-
-            // Query문 작성
             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
             pstmt.setString(1, id);
 
-            // Query문 실행
+
             ResultSet rs = pstmt.executeQuery();
             rs.next();
             User user = new User(rs.getString("id"), rs.getString("name"),
@@ -66,8 +64,7 @@ public class UserDao {
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         UserDao userDao = new UserDao();
-//        userDao.add();
-        User user = userDao.findById("6");
+        User user = userDao.findById("11");
         System.out.println(user.getName());
     }
 }
